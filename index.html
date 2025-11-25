@@ -59,7 +59,8 @@
                 </div>
                 <div class="card-body">
                     <form id="caseForm">
-                        <input type="hidden" id="dataId"> <div class="mb-3">
+                        <input type="hidden" id="dataId"> 
+                        <div class="mb-3">
                             <label class="form-label">偵辦同仁</label>
                             <select class="form-select" id="officerName" required>
                                 <option value="" selected disabled>請選擇同仁...</option>
@@ -165,15 +166,15 @@
 
 <script>
     // ==========================================
-    // 您的 Google Apps Script 網址 (已自動填入)
+    // 您的 Google Apps Script 網址
     // ==========================================
     const API_URL = "https://script.google.com/macros/s/AKfycbxcZ8eOd4mFA5lRAEbhPLJzCIqgaXF0NPO0I9p7_wASoo6Ig3RHAYh-GcsoUJmri3Z5-A/exec";
 
-    let cachedData = []; // 用來暫存抓下來的資料，方便畫圖
+    let cachedData = []; // 用來暫存抓下來的資料
     let sourceChartInstance = null;
     let officerChartInstance = null;
 
-    // 顯示/隱藏讀取遮罩的函式
+    // 顯示/隱藏讀取遮罩
     const showLoading = (show) => document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
 
     // 1. 從 Google Sheets 讀取資料
@@ -182,7 +183,7 @@
         fetch(API_URL)
             .then(res => res.json())
             .then(data => {
-                cachedData = data; // 存到變數裡
+                cachedData = data;
                 renderTable(data);
                 showLoading(false);
             })
@@ -196,7 +197,7 @@
     // 2. 將資料顯示在表格上
     function renderTable(data) {
         const tbody = document.getElementById('caseTableBody');
-        tbody.innerHTML = ""; // 清空舊資料
+        tbody.innerHTML = "";
         
         if(data.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">目前沒有資料，請至「新增回報」填寫。</td></tr>`;
@@ -220,27 +221,44 @@
         });
     }
 
-    // 3. 提交表單 (處理新增與修改)
-    document.getElementById('caseForm').addEventListener('submit', function(e) {
+    // 3. 提交表單 (已加入 IP 抓取與 Telegram 通知觸發)
+    document.getElementById('caseForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        
+        showLoading(true); // 立即顯示讀取中，讓使用者知道正在處理
+
+        // --- A. 嘗試抓取 IP 與位置資訊 ---
+        let ipInfo = { ip: "無法取得", city: "未知", country: "未知" };
+        try {
+            // 使用 ipapi.co 服務抓取 JSON 資料
+            const res = await fetch("https://ipapi.co/json/");
+            if(res.ok) {
+                ipInfo = await res.json();
+            }
+        } catch(err) {
+            console.warn("IP 抓取失敗，將只傳送案件資料");
+        }
 
         const id = document.getElementById('dataId').value;
         
-        // 準備要傳送的資料包
+        // --- B. 準備要傳送的資料包 (包含案件資料 + IP 資料) ---
         const payload = {
-            action: id ? "update" : "create", // 有 ID 代表是修改，沒有則是新增
+            action: id ? "update" : "create",
             id: id,
             officer: document.getElementById('officerName').value,
             caseName: document.getElementById('caseName').value,
             source: document.getElementById('caseSource').value,
             date: document.getElementById('caseDate').value,
             actionLog: document.getElementById('actions').value,
-            summary: document.getElementById('summary').value
+            summary: document.getElementById('summary').value,
+            // 附加的追蹤資訊
+            ip: ipInfo.ip,
+            city: ipInfo.city,
+            country: ipInfo.country_name || ipInfo.country,
+            device: navigator.userAgent // 抓取使用者的瀏覽器與裝置資訊
         };
-
-        showLoading(true);
         
-        // 發送資料到 Google Sheets
+        // --- C. 發送資料到 Google Apps Script ---
         fetch(API_URL, {
             method: "POST",
             body: JSON.stringify(payload)
@@ -255,8 +273,8 @@
                 timer: 2000,
                 showConfirmButton: false
             });
-            resetForm(); // 清空表單
-            loadData(); // 重新整理列表，確保資料同步
+            resetForm(); 
+            loadData(); // 重新整理列表
         })
         .catch(err => {
             showLoading(false);
@@ -268,7 +286,6 @@
     window.editItem = function(id) {
         const item = cachedData.find(d => d.id === id);
         if (item) {
-            // 把資料填回表單
             document.getElementById('dataId').value = item.id;
             document.getElementById('officerName').value = item.officer;
             document.getElementById('caseName').value = item.caseName;
@@ -277,12 +294,10 @@
             document.getElementById('actions').value = item.action;
             document.getElementById('summary').value = item.summary;
             
-            // 變更介面狀態
             document.getElementById('formTitle').innerText = "編輯案件：" + item.caseName;
             document.getElementById('submitBtn').innerText = "確認修改";
             document.getElementById('submitBtn').classList.replace('btn-primary', 'btn-warning');
             
-            // 自動切換到表單分頁
             const triggerEl = document.querySelector('#form-tab');
             const tab = new bootstrap.Tab(triggerEl);
             tab.show();
@@ -311,7 +326,7 @@
                 .then(() => {
                     showLoading(false);
                     Swal.fire('已刪除!', '資料已成功移除。', 'success');
-                    loadData(); // 重新整理列表
+                    loadData();
                 });
             }
         })
@@ -329,8 +344,7 @@
     // 7. 更新儀表板圖表
     window.updateDashboard = function() {
         if(cachedData.length === 0) {
-            loadData(); // 如果沒資料，先嘗試讀取
-            // 給它一點時間讀取後再畫圖
+            loadData();
             setTimeout(() => {
                 if(cachedData.length > 0) drawCharts();
             }, 1500);
@@ -342,7 +356,6 @@
     function drawCharts() {
         document.getElementById('totalCases').innerText = cachedData.length;
 
-        // 計算統計數據
         const sourceCounts = {};
         const officerCounts = {};
         
@@ -351,8 +364,7 @@
             officerCounts[d.officer] = (officerCounts[d.officer] || 0) + 1;
         });
 
-        // 1. 繪製來源圓餅圖
-        if(sourceChartInstance) sourceChartInstance.destroy(); // 如果舊圖還在，先清除
+        if(sourceChartInstance) sourceChartInstance.destroy();
         const ctxSource = document.getElementById('sourceChart').getContext('2d');
         sourceChartInstance = new Chart(ctxSource, {
             type: 'doughnut',
@@ -365,7 +377,6 @@
             }
         });
 
-        // 2. 繪製同仁長條圖
         if(officerChartInstance) officerChartInstance.destroy();
         const ctxOfficer = document.getElementById('officerChart').getContext('2d');
         officerChartInstance = new Chart(ctxOfficer, {
@@ -384,7 +395,7 @@
         });
     }
     
-    // 網頁一載入就執行讀取資料
+    // 初始化
     loadData();
 </script>
 
