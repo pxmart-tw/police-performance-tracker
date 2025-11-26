@@ -48,14 +48,15 @@
                 <select class="form-select form-select-lg" id="loginUser" required>
                     <option value="" selected disabled>請選擇您的姓名...</option>
                     <option value="admin">管理員 (Admin)</option>
-                    <option value="劉以仰">劉以仰</option>
-                    <option value="許暐昕">許暐昕</option>
-                    <option value="呂柏勳">呂柏勳</option>
-                    <option value="黃韋嘉">黃韋嘉</option>
-                    <option value="李偲豪">李偲豪</option>
                     <option value="陳進忠">陳進忠</option>
+                    <option value="劉以仰">劉以仰</option>
+                    <option value="李偲豪">李偲豪</option>
+                    <option value="許暐昕">許暐昕</option>
                     <option value="呂亞迪">呂亞迪</option>
                     <option value="陳澔諹">陳澔諹</option>
+                    <option value="呂柏勳">呂柏勳</option>
+                    <option value="陳怡豪">陳怡豪</option>
+                    <option value="黃韋嘉">黃韋嘉</option>
                 </select>
             </div>
             <div class="mb-4 text-start">
@@ -239,7 +240,13 @@
                 loadData(); 
                 Swal.fire({ icon: 'success', title: '登入成功', text: `歡迎回來，${currentUser}`, timer: 1500, showConfirmButton: false });
             } else {
-                Swal.fire("登入失敗", "帳號或密碼錯誤。", "error");
+                // *** 密碼錯誤提示 ***
+                Swal.fire({
+                    icon: 'error',
+                    title: '登入失敗',
+                    text: '密碼錯誤，請重新輸入！',
+                    confirmButtonText: '確定'
+                });
             }
         })
         .catch(err => {
