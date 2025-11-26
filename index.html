@@ -215,7 +215,7 @@
 
     const showLoading = (show) => document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
 
-    // --- 登入功能 ---
+    // --- 登入功能 (修正版：顯示次數與錯誤處理) ---
     document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = document.getElementById('loginUser').value;
@@ -230,21 +230,35 @@
         .then(res => res.json())
         .then(data => {
             showLoading(false);
+            
             if (data.status === "success") {
+                // 登入成功
                 currentUser = data.name;
+                
+                // 顯示次數 (新功能)
+                const todayCount = data.todayCount || 1;
+                const monthCount = data.monthCount || 1;
+                
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
                 document.getElementById('currentUserDisplay').innerHTML = `<i class="fas fa-user-circle me-1"></i> ${currentUser}`;
                 document.getElementById('officerName').value = currentUser; 
                 
                 loadData(); 
-                Swal.fire({ icon: 'success', title: '登入成功', text: `歡迎回來，${currentUser}`, timer: 1500, showConfirmButton: false });
+                
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: '登入成功', 
+                    html: `歡迎回來，${currentUser}<br><br>今日第 <b>${todayCount}</b> 次登入<br>本月第 <b>${monthCount}</b> 次登入`,
+                    timer: 3000, 
+                    showConfirmButton: false 
+                });
             } else {
-                // *** 密碼錯誤提示 ***
+                // 登入失敗 (密碼錯誤)
                 Swal.fire({
                     icon: 'error',
                     title: '登入失敗',
-                    text: '密碼錯誤，請重新輸入！',
+                    text: data.message || '帳號或密碼錯誤，請重新輸入！',
                     confirmButtonText: '確定'
                 });
             }
@@ -252,12 +266,13 @@
         .catch(err => {
             showLoading(false);
             console.error("登入錯誤:", err);
-            // 友善提示
+            
+            // 系統連線錯誤
             Swal.fire({
                 icon: 'error',
-                title: '連線失敗',
-                text: '無法連接資料庫。請確認 Google Apps Script 部署正常。',
-                footer: '請確認網頁右下角是否已更新為新網址。'
+                title: '系統連線錯誤',
+                text: '無法連接後端，請確認網路或聯絡管理員 (Apps Script 部署問題)',
+                footer: '請確認是否已執行「建立新版本」部署。'
             });
         });
     });
