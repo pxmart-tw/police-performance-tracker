@@ -10,99 +10,128 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        /* --- 全局設定 --- */
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: #2c3e50; /* 背景色直接設為深藍，避免滑動出現白邊 */
-            position: relative; 
-            margin: 0;
-            padding: 0;
+        /* --- 蒂芬妮綠主題配色 --- */
+        :root {
+            --tiffany-main: #1ABC9C;       /* 主要顏色 */
+            --tiffany-dark: #16A085;       /* 深色點綴 */
+            --tiffany-bg-start: #E8F8F5;   /* 漸層淺色 */
+            --tiffany-bg-end: #A2D9CE;     /* 漸層深色 */
+            --text-dark: #2C3E50;          /* 深色文字 */
         }
 
-        /* --- 登入畫面 (終極防遮擋修正) --- */
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: var(--tiffany-bg-start);
+            margin: 0; padding: 0;
+            overscroll-behavior-y: none; 
+        }
+
+        /* --- 登入畫面 (絕對置中，不需捲動) --- */
         #login-screen {
-            /* 改用 min-height 確保至少有螢幕高，但內容多時可延伸 */
-            min-height: 100vh; 
-            width: 100%;
-            background: #2c3e50; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100dvh; /* 使用 dvh 解決手機網址列問題 */
+            background: linear-gradient(135deg, var(--tiffany-bg-start), var(--tiffany-bg-end));
             z-index: 10000;
             
-            /* 使用 Flexbox 讓內容居中，但允許滑動 */
+            /* Flexbox 完美置中 */
             display: flex;
-            flex-direction: column;
-            justify-content: center; /* 垂直居中 */
-            align-items: center;     /* 水平居中 */
-            
-            /* 關鍵修正：底部保留超大空間，防止被手機工具列遮住 */
-            padding-bottom: 150px; 
-            padding-top: 20px;
-            
-            /* 讓這個區塊是網頁的主體，而非浮動層 */
-            position: relative; 
+            justify-content: center;
+            align-items: center; 
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .login-box {
             background: #ffffff;
-            padding: 30px 25px;
-            border-radius: 12px;
-            width: 90%; 
-            max-width: 380px; 
+            padding: 25px 20px; /* 縮小 padding 節省空間 */
+            border-radius: 15px;
+            width: 100%; 
+            max-width: 350px; 
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            /* 移除 margin，由父層 padding 控制 */
+            box-shadow: 0 10px 30px rgba(22, 160, 133, 0.15); /* 綠色系陰影 */
+            border: 1px solid rgba(255,255,255,0.5);
         }
 
+        /* Logo 與標題 */
+        .login-logo { width: 100px; margin-bottom: 10px; } /* 縮小 Logo */
+        
         .login-title {
-            color: #333;
+            color: var(--tiffany-dark);
+            font-weight: 800;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+        }
+
+        /* 輸入框樣式 */
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #d1e7e3;
+            padding: 10px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--tiffany-main);
+            box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.2);
+        }
+        .mb-3 { margin-bottom: 12px !important; } /* 縮小間距 */
+        .mb-4 { margin-bottom: 15px !important; } /* 縮小間距 */
+
+        /* 按鈕美化 */
+        .btn-login {
+            background: var(--tiffany-main);
+            border: none;
+            color: white;
+            padding: 10px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 25px;
-            font-size: 1.6rem;
-            margin-top: 10px; 
+            border-radius: 8px;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.3);
+            transition: 0.3s;
+        }
+        .btn-login:hover {
+            background: var(--tiffany-dark);
+            transform: translateY(-2px);
         }
 
-        /* --- 系統內頁導覽列 --- */
-        .navbar { background-color: #2c3e50; }
+        /* --- 系統內頁 (搭配新配色) --- */
+        .navbar { 
+            background: linear-gradient(to right, var(--tiffany-dark), var(--tiffany-main));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand { color: white !important; font-weight: bold; }
         
-        .navbar-logo {
-            height: 40px;
-            margin-right: 10px;
-        }
+        #main-content { background-color: #f8fcfb; min-height: 100vh; overflow-y: auto; }
+        .container { padding-bottom: 100px; }
 
-        /* 內頁背景色要改回淺灰，因為 body 設為了深藍 */
-        #main-content {
-            background-color: #f4f6f9;
-            min-height: 100vh;
+        .card { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
+        .card-header { 
+            background-color: white; 
+            border-bottom: 2px solid #f0f0f0; 
+            color: var(--tiffany-dark); 
+            font-weight: 800; 
         }
-
-        .container {
-            padding-bottom: 100px; /* 內頁底部也增加緩衝 */
-        }
-
-        .card { border-radius: 12px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .card-header { background-color: #fff; border-bottom: 1px solid #eee; font-weight: bold; color: #2c3e50; border-radius: 12px 12px 0 0 !important; }
-        .btn-primary { background-color: #3498db; border: none; }
-        .btn-primary:hover { background-color: #2980b9; }
-        .nav-tabs .nav-link { color: #495057; }
-        .nav-tabs .nav-link.active { font-weight: bold; color: #2c3e50; }
         
-        /* 讀取遮罩 */
-        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-        
-        @media (max-width: 768px) { 
-            .container { padding: 10px; padding-bottom: 120px; } 
-        }
+        /* 按鈕改色 */
+        .btn-primary { background-color: var(--tiffany-main); border-color: var(--tiffany-main); }
+        .btn-primary:hover { background-color: var(--tiffany-dark); border-color: var(--tiffany-dark); }
+        .nav-tabs .nav-link.active { color: var(--tiffany-dark); border-bottom: 3px solid var(--tiffany-main); }
+        .nav-tabs .nav-link { color: #7f8c8d; }
+
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h3 class="login-title">偵二隊案件管理系統</h3>
+        <img src="https://www.klg.gov.tw/cht/assets/img/logo.png" class="login-logo">
+        <h3 class="login-title">偵二隊案件管理</h3>
         
         <form id="loginForm">
             <div class="mb-3 text-start">
-                <label class="form-label fw-bold">帳號 (姓名)</label>
-                <select class="form-select form-select-lg" id="loginUser" required>
+                <label class="form-label fw-bold text-muted small mb-1">帳號 (姓名)</label>
+                <select class="form-select" id="loginUser" required>
                     <option value="" selected disabled>請選擇...</option>
                     <option value="admin">管理員 (Admin)</option>
                     <option value="陳進忠">陳進忠</option>
@@ -118,45 +147,45 @@
             </div>
             
             <div class="mb-4 text-start">
-                <label class="form-label fw-bold">密碼</label>
-                <input type="password" class="form-control form-control-lg" id="loginPwd" placeholder="請輸入密碼" required>
+                <label class="form-label fw-bold text-muted small mb-1">密碼</label>
+                <input type="password" class="form-control" id="loginPwd" placeholder="請輸入密碼" required>
             </div>
             
-            <button type="submit" class="btn btn-primary btn-lg w-100">登入</button>
+            <button type="submit" class="btn btn-login">登入系統</button>
         </form>
         
-        <div class="mt-4 text-muted small">
+        <div class="mt-3 text-muted small" style="font-size: 12px; color: #95a5a6;">
             基隆市警察局刑警大隊偵二隊
         </div>
     </div>
 </div>
 
 <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-    <div class="mt-2 fw-bold text-dark">處理中...</div>
+    <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;"></div>
+    <div class="mt-2 fw-bold text-secondary">系統連線中...</div>
 </div>
 
 <div id="main-content" style="display: none;">
     <nav class="navbar navbar-dark mb-4">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1 d-flex align-items-center">
-                <img src="https://www.klg.gov.tw/cht/assets/img/logo.png" class="navbar-logo">
-                我們的偵二隊案件進度表
+                <img src="https://www.klg.gov.tw/cht/assets/img/logo.png" style="height: 35px; margin-right: 10px;">
+                偵二隊案件進度表
             </span>
-            <span class="text-white" id="currentUserDisplay"></span>
+            <span class="text-white small" id="currentUserDisplay"></span>
         </div>
     </nav>
 
     <div class="container">
         <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
             <li class="nav-item">
-                <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#form-pane"><i class="fas fa-edit me-1"></i>新增回報</button>
+                <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#form-pane"><i class="fas fa-edit me-1"></i>新增</button>
             </li>
             <li class="nav-item">
-                <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-pane" onclick="loadData()"><i class="fas fa-list me-1"></i>案件總表</button>
+                <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-pane" onclick="loadData()"><i class="fas fa-list me-1"></i>列表</button>
             </li>
             <li class="nav-item">
-                <button class="nav-link" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-pane" onclick="updateDashboard()"><i class="fas fa-chart-pie me-1"></i>KPI 儀表板</button>
+                <button class="nav-link" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-pane" onclick="updateDashboard()"><i class="fas fa-chart-pie me-1"></i>KPI</button>
             </li>
         </ul>
 
@@ -164,44 +193,43 @@
             <div class="tab-pane fade show active" id="form-pane">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <span id="formTitle">填寫案件進度</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetForm()">重置表單</button>
+                        <span>案件進度回報</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetForm()">重置</button>
                     </div>
                     <div class="card-body">
                         <form id="caseForm">
                             <input type="hidden" id="dataId"> 
                             <div class="mb-3">
-                                <label class="form-label">偵辦同仁</label>
+                                <label class="form-label small">偵辦同仁</label>
                                 <input type="text" class="form-control" id="officerName" readonly style="background-color: #e9ecef;">
-                                <div class="form-text">已自動帶入您的帳號姓名</div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">案件名稱</label>
-                                <input type="text" class="form-control" id="caseName" placeholder="例如：跨區竊盜慣犯追緝案" required>
+                                <label class="form-label small">案件名稱</label>
+                                <input type="text" class="form-control" id="caseName" required>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">案件來源</label>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label small">來源</label>
                                     <select class="form-select" id="caseSource">
                                         <option value="報案">報案</option><option value="檢舉">檢舉</option>
                                         <option value="線民">線民</option><option value="情資">情資</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">立案日期</label>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label small">日期</label>
                                     <input type="date" class="form-control" id="caseDate" required>
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">偵辦作為</label>
+                                <label class="form-label small">偵辦作為</label>
                                 <textarea class="form-control" id="actions" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">目前進度摘要 (30-80字)</label>
+                                <label class="form-label small">目前進度</label>
                                 <textarea class="form-control" id="summary" rows="2"></textarea>
                             </div>
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">提交回報</button>
+                                <button type="submit" class="btn btn-primary btn-lg">提交</button>
                             </div>
                         </form>
                     </div>
@@ -211,20 +239,19 @@
             <div class="tab-pane fade" id="list-pane">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>所有案件紀錄</span>
-                        <button class="btn btn-sm btn-primary" onclick="loadData()"><i class="fas fa-sync me-1"></i>重新整理</button>
+                        <span>案件紀錄</span>
+                        <button class="btn btn-sm btn-primary" onclick="loadData()"><i class="fas fa-sync"></i></button>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover mb-0" style="min-width: 800px;">
+                            <table class="table table-striped table-hover mb-0" style="min-width: 600px;">
                                 <thead class="table-light">
                                     <tr>
-                                        <th width="12%">操作</th>
-                                        <th width="10%">同仁</th>
-                                        <th>案件名稱</th>
-                                        <th width="10%">來源</th>
-                                        <th width="15%">立案日期</th>
-                                        <th>進度摘要</th>
+                                        <th width="15%">操作</th>
+                                        <th width="15%">同仁</th>
+                                        <th>案件</th>
+                                        <th width="15%">來源</th>
+                                        <th width="20%">日期</th>
                                     </tr>
                                 </thead>
                                 <tbody id="caseTableBody"></tbody>
@@ -237,22 +264,22 @@
             <div class="tab-pane fade" id="dashboard-pane">
                 <div class="row">
                     <div class="col-12 mb-3">
-                        <div class="card text-white bg-primary">
+                        <div class="card text-white bg-success">
                             <div class="card-body text-center">
-                                <h5 class="card-title">目前總案件量</h5>
+                                <h5 class="card-title">總案件量</h5>
                                 <h2 class="display-4 fw-bold" id="totalCases">0</h2>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="card">
-                            <div class="card-header">案件來源分布</div>
+                            <div class="card-header">來源分布</div>
                             <div class="card-body"><canvas id="sourceChart"></canvas></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="card">
-                            <div class="card-header">同仁案件量統計 (彩色區分)</div>
+                            <div class="card-header">同仁統計</div>
                             <div class="card-body"><canvas id="officerChart"></canvas></div>
                         </div>
                     </div>
@@ -266,7 +293,7 @@
 
 <script>
     // ==========================================
-    // 您的 Google Apps Script 網址 (維持不變)
+    // 您的 Google Apps Script 網址 (請勿更改)
     // ==========================================
     const API_URL = "https://script.google.com/macros/s/AKfycbyXV36PIQPAGWN-oKcz2eoUWPmVkxDSV1CWQb23HNd3jOu20q3mGY_QRakuCNBbbbSGMQ/exec";
 
@@ -300,7 +327,7 @@
                 
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
-                document.getElementById('currentUserDisplay').innerHTML = `<i class="fas fa-user-circle me-1"></i> ${currentUser}`;
+                document.getElementById('currentUserDisplay').innerHTML = `${currentUser}`;
                 document.getElementById('officerName').value = currentUser; 
                 
                 loadData(); 
@@ -308,27 +335,25 @@
                 Swal.fire({ 
                     icon: 'success', 
                     title: '登入成功', 
-                    html: `歡迎回來，${currentUser}<br><br>今日第 <b>${todayCount}</b> 次登入<br>本月第 <b>${monthCount}</b> 次登入`,
-                    timer: 3000, 
-                    showConfirmButton: false 
+                    html: `歡迎回来，${currentUser}<br>今日第 ${todayCount} 次，本月第 ${monthCount} 次`,
+                    timer: 2500, 
+                    showConfirmButton: false,
+                    confirmButtonColor: '#1ABC9C'
                 });
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: '登入失敗',
-                    text: data.message || '帳號或密碼錯誤，請重新輸入！',
-                    confirmButtonText: '確定'
+                    text: data.message || '帳號或密碼錯誤',
+                    confirmButtonText: '確定',
+                    confirmButtonColor: '#e74c3c'
                 });
             }
         })
         .catch(err => {
             showLoading(false);
             console.error("登入錯誤:", err);
-            Swal.fire({
-                icon: 'error',
-                title: '連線失敗',
-                text: '無法連接後端，請確認 Apps Script 部署是否正常。',
-            });
+            Swal.fire({ icon: 'error', title: '連線失敗', text: '無法連接後端' });
         });
     });
 
@@ -350,7 +375,7 @@
         const tbody = document.getElementById('caseTableBody');
         tbody.innerHTML = "";
         if(data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">無資料</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">無資料</td></tr>`;
             return;
         }
         data.forEach(item => {
@@ -364,10 +389,9 @@
                     <button class="btn btn-sm btn-danger ${btnClass}" onclick="deleteItem('${item.id}')"><i class="fas fa-trash"></i></button>
                 </td>
                 <td>${item.officer}</td>
-                <td>${item.caseName}</td>
+                <td class="text-truncate" style="max-width: 120px;">${item.caseName}</td>
                 <td><span class="badge bg-secondary">${item.source}</span></td>
                 <td>${item.date}</td>
-                <td class="text-truncate" style="max-width: 150px;">${item.summary}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -398,7 +422,7 @@
         .then(res => res.json())
         .then(data => {
             showLoading(false);
-            Swal.fire({ icon: 'success', title: '成功', text: data.result, timer: 1500, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: '成功', text: data.result, timer: 1500, showConfirmButton: false, confirmButtonColor: '#1ABC9C' });
             resetForm(); loadData();
         });
     });
@@ -413,7 +437,6 @@
             document.getElementById('caseDate').value = item.date;
             document.getElementById('actions').value = item.action;
             document.getElementById('summary').value = item.summary;
-            document.getElementById('formTitle').innerText = "編輯案件：" + item.caseName;
             document.getElementById('submitBtn').innerText = "確認修改";
             document.getElementById('submitBtn').classList.replace('btn-primary', 'btn-warning');
             new bootstrap.Tab(document.querySelector('#form-tab')).show();
@@ -436,8 +459,7 @@
         document.getElementById('caseForm').reset();
         document.getElementById('dataId').value = "";
         document.getElementById('officerName').value = currentUser; 
-        document.getElementById('formTitle').innerText = "填寫案件進度";
-        document.getElementById('submitBtn').innerText = "提交回報";
+        document.getElementById('submitBtn').innerText = "提交";
         document.getElementById('submitBtn').classList.replace('btn-warning', 'btn-primary');
     }
 
@@ -460,12 +482,12 @@
             type: 'doughnut',
             data: {
                 labels: Object.keys(sourceCounts),
-                datasets: [{ data: Object.values(sourceCounts), backgroundColor: ['#e74c3c', '#f1c40f', '#3498db', '#9b59b6'] }]
+                datasets: [{ data: Object.values(sourceCounts), backgroundColor: ['#1ABC9C', '#16A085', '#A3E4D7', '#76D7C4'] }]
             }
         });
 
         const officerLabels = Object.keys(officerCounts);
-        const colors = officerLabels.map((_, i) => `hsl(${i * 360 / officerLabels.length}, 70%, 50%)`);
+        const colors = officerLabels.map((_, i) => `hsl(${160 + (i * 20)}, 70%, 45%)`);
 
         if(officerChartInstance) officerChartInstance.destroy();
         officerChartInstance = new Chart(document.getElementById('officerChart'), {
