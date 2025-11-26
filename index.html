@@ -48,14 +48,14 @@
                 <select class="form-select form-select-lg" id="loginUser" required>
                     <option value="" selected disabled>請選擇您的姓名...</option>
                     <option value="admin">管理員 (Admin)</option>
-                    <option value="陳進忠">陳進忠</option>
-                    <option value="黃韋嘉">黃韋嘉</option>
                     <option value="劉以仰">劉以仰</option>
-                    <option value="李偲豪">李偲豪</option>
-                    <option value="陳澔諹">陳澔諹</option>
                     <option value="許暐昕">許暐昕</option>
-                    <option value="呂亞迪">呂亞迪</option>
                     <option value="呂柏勳">呂柏勳</option>
+                    <option value="黃韋嘉">黃韋嘉</option>
+                    <option value="李偲豪">李偲豪</option>
+                    <option value="陳進忠">陳進忠</option>
+                    <option value="呂亞迪">呂亞迪</option>
+                    <option value="陳澔諹">陳澔諹</option>
                 </select>
             </div>
             <div class="mb-4 text-start">
@@ -203,9 +203,9 @@
 
 <script>
     // ==========================================
-    // 請填入您的 Google Apps Script 網址
+    // 您的 Google Apps Script 網址 (已更新為最新版)
     // ==========================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbxcZ8eOd4mFA5lRAEbhPLJzCIqgaXF0NPO0I9p7_wASoo6Ig3RHAYh-GcsoUJmri3Z5-A/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyXV36PIQPAGWN-oKcz2eoUWPmVkxDSV1CWQb23HNd3jOu20q3mGY_QRakuCNBbbbSGMQ/exec";
 
     let cachedData = [];
     let currentUser = "";
@@ -221,7 +221,6 @@
         const pwd = document.getElementById('loginPwd').value;
 
         showLoading(true);
-        console.log("正在嘗試登入:", user); // Debug用
 
         fetch(API_URL, {
             method: "POST",
@@ -240,17 +239,18 @@
                 loadData(); 
                 Swal.fire({ icon: 'success', title: '登入成功', text: `歡迎回來，${currentUser}`, timer: 1500, showConfirmButton: false });
             } else {
-                Swal.fire("登入失敗", "帳號或密碼錯誤，請檢查。", "error");
+                Swal.fire("登入失敗", "帳號或密碼錯誤。", "error");
             }
         })
         .catch(err => {
             showLoading(false);
             console.error("登入錯誤:", err);
+            // 友善提示
             Swal.fire({
                 icon: 'error',
                 title: '連線失敗',
-                text: '無法連接後端資料庫。請確認 Google Apps Script 是否已執行「建立新版本」部署。',
-                footer: '<a href="#">為什麼會這樣？通常是因為後端更新後忘記發布新版本。</a>'
+                text: '無法連接資料庫。請確認 Google Apps Script 部署正常。',
+                footer: '請確認網頁右下角是否已更新為新網址。'
             });
         });
     });
