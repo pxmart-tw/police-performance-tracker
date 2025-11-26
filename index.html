@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我們的偵二隊案件進度表</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -10,43 +10,84 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        body { background-color: #f4f6f9; font-family: 'Noto Sans TC', sans-serif; position: relative; }
-        .navbar { background-color: #2c3e50; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        /* --- 全局設定 --- */
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f4f6f9; position: relative; }
+
+        /* --- 登入畫面 (版面調整) --- */
+        #login-screen {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: #2c3e50; 
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 改為靠上對齊，方便調整位置 */
+            padding-top: 10vh;       /* 距離頂部 10% 的高度 */
+            overflow-y: auto;
+        }
+
+        .login-box {
+            background: #ffffff;
+            padding: 30px 25px;
+            border-radius: 12px;
+            width: 90%; 
+            max-width: 380px; 
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            margin-bottom: 50px; /* 底部留白，防止手機鍵盤遮擋 */
+        }
+
+        .login-title {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+            margin-top: 10px; /* 標題上方留一點空間 */
+        }
+
+        /* --- 系統內頁導覽列 --- */
+        .navbar { background-color: #2c3e50; }
+        
+        .navbar-logo {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .container {
+            padding-bottom: 80px;
+        }
+
+        .card { border-radius: 12px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .card-header { background-color: #fff; border-bottom: 1px solid #eee; font-weight: bold; color: #2c3e50; border-radius: 12px 12px 0 0 !important; }
         .btn-primary { background-color: #3498db; border: none; }
         .btn-primary:hover { background-color: #2980b9; }
         .nav-tabs .nav-link { color: #495057; }
         .nav-tabs .nav-link.active { font-weight: bold; color: #2c3e50; }
         
-        /* 登入畫面 */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #2c3e50; z-index: 10000;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .login-box {
-            background: white; padding: 40px; border-radius: 20px;
-            width: 90%; max-width: 450px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
         /* 讀取遮罩 */
         .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-        @media (max-width: 768px) { .container { padding: 10px; } }
+        
+        @media (max-width: 768px) { 
+            .container { padding: 10px; padding-bottom: 80px; } 
+            /* 手機版登入框位置微調 */
+            #login-screen { padding-top: 15vh; }
+        }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <img src="https://www.klg.gov.tw/cht/assets/img/logo.png" style="width: 320px; margin-bottom: 20px;">
-        <h3 class="mb-4 fw-bold text-primary">偵二隊系統登入</h3>
+        <h3 class="login-title">偵二隊案件管理系統</h3>
+        
         <form id="loginForm">
             <div class="mb-3 text-start">
                 <label class="form-label fw-bold">帳號 (姓名)</label>
                 <select class="form-select form-select-lg" id="loginUser" required>
-                    <option value="" selected disabled>請選擇您的姓名...</option>
+                    <option value="" selected disabled>請選擇...</option>
                     <option value="admin">管理員 (Admin)</option>
                     <option value="陳進忠">陳進忠</option>
                     <option value="劉以仰">劉以仰</option>
@@ -59,13 +100,18 @@
                     <option value="黃韋嘉">黃韋嘉</option>
                 </select>
             </div>
+            
             <div class="mb-4 text-start">
                 <label class="form-label fw-bold">密碼</label>
                 <input type="password" class="form-control form-control-lg" id="loginPwd" placeholder="請輸入密碼" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">登入系統</button>
+            
+            <button type="submit" class="btn btn-primary btn-lg w-100">登入</button>
         </form>
-        <div class="mt-3 text-muted small">請輸入專屬密碼登入</div>
+        
+        <div class="mt-4 text-muted small">
+            基隆市警察局刑警大隊偵二隊
+        </div>
     </div>
 </div>
 
@@ -78,7 +124,7 @@
     <nav class="navbar navbar-dark mb-4">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1 d-flex align-items-center">
-                <img src="https://www.klg.gov.tw/cht/assets/img/logo.png" alt="Logo" style="height: 45px; margin-right: 15px; background: white; padding: 2px; border-radius: 5px;">
+                <img src="https://www.klg.gov.tw/cht/assets/img/logo.png" class="navbar-logo">
                 我們的偵二隊案件進度表
             </span>
             <span class="text-white" id="currentUserDisplay"></span>
@@ -204,7 +250,7 @@
 
 <script>
     // ==========================================
-    // 您的 Google Apps Script 網址 (已更新為最新版)
+    // 您的 Google Apps Script 網址 (維持不變)
     // ==========================================
     const API_URL = "https://script.google.com/macros/s/AKfycbyXV36PIQPAGWN-oKcz2eoUWPmVkxDSV1CWQb23HNd3jOu20q3mGY_QRakuCNBbbbSGMQ/exec";
 
@@ -215,7 +261,7 @@
 
     const showLoading = (show) => document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
 
-    // --- 登入功能 (修正版：顯示次數與錯誤處理) ---
+    // --- 登入功能 ---
     document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = document.getElementById('loginUser').value;
@@ -232,10 +278,7 @@
             showLoading(false);
             
             if (data.status === "success") {
-                // 登入成功
                 currentUser = data.name;
-                
-                // 顯示次數 (新功能)
                 const todayCount = data.todayCount || 1;
                 const monthCount = data.monthCount || 1;
                 
@@ -254,7 +297,6 @@
                     showConfirmButton: false 
                 });
             } else {
-                // 登入失敗 (密碼錯誤)
                 Swal.fire({
                     icon: 'error',
                     title: '登入失敗',
@@ -266,13 +308,10 @@
         .catch(err => {
             showLoading(false);
             console.error("登入錯誤:", err);
-            
-            // 系統連線錯誤
             Swal.fire({
                 icon: 'error',
-                title: '系統連線錯誤',
-                text: '無法連接後端，請確認網路或聯絡管理員 (Apps Script 部署問題)',
-                footer: '請確認是否已執行「建立新版本」部署。'
+                title: '連線失敗',
+                text: '無法連接後端，請確認 Apps Script 部署是否正常。',
             });
         });
     });
